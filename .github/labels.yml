@@ -1,0 +1,59 @@
+# Fuente de verdad de labels del repo.
+# El workflow .github/workflows/claude-issue-triage.yml los crea/actualiza
+# (gh label create --force) antes de que Claude clasifique el issue.
+
+# --- Tipo ---
+- name: bug
+  color: d73a4a
+  description: Algo no funciona como se espera
+
+- name: enhancement
+  color: a2eeef
+  description: Nueva funcionalidad o mejora
+
+- name: documentation
+  color: 0075ca
+  description: Cambios o faltantes en documentacion
+
+- name: question
+  color: d876e3
+  description: Consulta o pedido de aclaracion
+
+# --- Area (segun arquitectura de game.js) ---
+- name: "area:rendering"
+  color: fbca04
+  description: Canvas, draw(), drawBlock, ghost, preview
+
+- name: "area:input"
+  color: fbca04
+  description: Listener de keydown, movimiento, rotacion, drops
+
+- name: "area:game-logic"
+  color: fbca04
+  description: Board, colisiones, lock, clearLines, scoring, niveles
+
+- name: "area:ui"
+  color: fbca04
+  description: index.html, style.css, overlay, textos en pantalla
+
+- name: "area:build-config"
+  color: fbca04
+  description: Workflows, constantes acopladas (COLS/ROWS/BLOCK), config del repo
+
+# --- Prioridad ---
+- name: "priority:alta"
+  color: b60205
+  description: Rompe el juego o bloquea el uso
+
+- name: "priority:media"
+  color: d4c5f9
+  description: Impacto moderado, hay workaround
+
+- name: "priority:baja"
+  color: c2e0c6
+  description: Cosmetico o menor
+
+# --- Triage ---
+- name: needs-triage
+  color: ededed
+  description: Clasificado automaticamente, pendiente de revision humana

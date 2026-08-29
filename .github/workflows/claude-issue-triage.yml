@@ -1,0 +1,87 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    # No correr para bots ni para issues que mencionan @claude (esos los maneja claude.yml).
+    if: >
+      github.event.sender.type != 'Bot' &&
+      !contains(github.event.issue.body, '@claude') &&
+      !contains(github.event.issue.title, '@claude')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Ensure curated labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # yq (mikefarah v4) viene preinstalado en los runners ubuntu-latest.
+          count=$(yq '. | length' .github/labels.yml)
+          for i in $(seq 0 $((count - 1))); do
+            name=$(yq -r ".[$i].name" .github/labels.yml)
+            color=$(yq -r ".[$i].color" .github/labels.yml)
+            desc=$(yq -r ".[$i].description" .github/labels.yml)
+            gh label create "$name" --color "$color" --description "$desc" --force
+          done
+
+      - name: Run Claude issue triage
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Un unico comentario que se actualiza en cada edicion del issue (no se duplica).
+          use_sticky_comment: true
+          claude_args: >-
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh label list:*),Read,Glob,Grep"
+          prompt: |
+            Sos el triador de issues del repo ${{ github.repository }}.
+            Issue #${{ github.event.issue.number }}
+            Titulo: ${{ github.event.issue.title }}
+            Autor: ${{ github.event.issue.user.login }}
+
+            Cuerpo del issue:
+            ---
+            ${{ github.event.issue.body }}
+            ---
+
+            Tareas:
+            1. Lee el issue y explora el codigo relevante (game.js, index.html, style.css)
+               para entender el problema. Usa Read/Glob/Grep.
+            2. Ejecuta `gh label list` y elegi SOLO labels de esa lista (no inventes
+               ni crees labels). Anadilos con:
+               `gh issue edit ${{ github.event.issue.number }} --add-label "<label1>" --add-label "<label2>"`
+               Anadi siempre `needs-triage`. Elegi 1 label de tipo, 1+ de area y, si
+               podes inferirla, 1 de prioridad.
+            3. Responde (tu mensaje final se publica como comentario del issue) con
+               este formato exacto en espanol:
+
+            ## Diagnostico
+            <que esta pasando / comportamiento esperado vs actual>
+
+            ## Area afectada
+            <archivos y funciones concretas, ej. `game.js:ghostY`, `draw()`, `collide()`>
+
+            ## Causa raiz probable
+            <hipotesis tecnica basada en el codigo leido>
+
+            ## Propuesta de solucion
+            <pasos concretos para implementar el fix>
+
+            ## Riesgos / consideraciones
+            <efectos colaterales, acoplamientos — ej. COLS/ROWS/BLOCK entre game.js e index.html>
+
+            Si el issue es demasiado vago para diagnosticar, pedi la info faltante
+            en la seccion Diagnostico y aplica solo `needs-triage` + label de tipo.
