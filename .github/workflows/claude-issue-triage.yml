@@ -66,7 +66,11 @@ jobs:
                Anadi siempre `needs-triage`. Elegi 1 label de tipo, 1+ de area y, si
                podes inferirla, 1 de prioridad.
             3. Responde (tu mensaje final se publica como comentario del issue) con
-               este formato exacto en espanol:
+               este formato exacto en espanol. Todo lo que comentes tiene que estar
+               en formato Markdown que GitHub pueda interpretar (GitHub Flavored
+               Markdown): usa encabezados `##`, listas, y bloques de codigo con
+               triple backtick y lenguaje (```js) para el codigo, `backticks` para
+               nombres de archivos/funciones, y tablas si hacen falta.
 
             ## Diagnostico
             <que esta pasando / comportamiento esperado vs actual>
