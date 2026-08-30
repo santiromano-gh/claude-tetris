@@ -16,8 +16,8 @@ Single-file, module-free script (`'use strict'`), all state in module-level `let
 
 Key pieces that span functions:
 
-- **Board model**: `board` is a `ROWS`×`COLS` array of ints. `0` = empty; `1`–`7` index into both `COLORS` and `PIECES` (same index identifies a piece's color and its shape matrix). `createBoard()` builds it.
-- **Pieces**: `PIECES[type]` is a square matrix. Rotation = transpose + row-reverse in `rotateCW()`. `tryRotate()` applies it then attempts wall kicks (`[0,-1,1,-2,2]` column offsets) via `collide()`.
+- **Board model**: `board` is a `ROWS`×`COLS` array of ints. `0` = empty; `1`–`8` index into both `COLORS` and `PIECES` (same index identifies a piece's color and its shape matrix). `createBoard()` builds it.
+- **Pieces**: `PIECES[type]` is a square matrix. Rotation = transpose + row-reverse in `rotateCW()`. `tryRotate()` applies it then attempts wall kicks (`[0,-1,1,-2,2]` column offsets) via `collide()`. Index `8` is the "tuerca" (nut, `NUT` constant): a 3×3 ring whose center cell is `0`, so locking it leaves a permanent hole — `collide()`/`merge()`/`clearLines()` already skip `0` cells; `drawBlock()` has a `colorIndex === NUT` branch that punches the bore/ring detail.
 - **Collision**: `collide(shape, x, y)` is the single source of truth for "can this shape sit here" — used by movement, rotation, `ghostY()`, soft/hard drop, and spawn (spawn collision triggers `endGame()`).
 - **Game loop**: `loop(ts)` accumulates delta time into `dropAccum`; when it exceeds `dropInterval` the piece steps down one row or `lockPiece()` runs. `lockPiece()` = `merge()` (stamp shape into `board`) → `clearLines()` → `spawn()` (promote `next` to `current`, roll a new `next`, redraw preview).
 - **Scoring / speed**: `LINE_SCORES = [0,100,300,500,800]` × `level`; soft drop +1/row, hard drop +2/cell. `level = floor(lines/10) + 1`; `dropInterval = max(100, 1000 - (level-1)*90)` — recomputed only in `clearLines()`.

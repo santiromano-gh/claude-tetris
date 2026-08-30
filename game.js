@@ -3,6 +3,7 @@
 const COLS = 10;
 const ROWS = 20;
 const BLOCK = 30;
+const NUT = 8;
 
 const COLORS = [
   null,
@@ -13,6 +14,7 @@ const COLORS = [
   '#e57373', // Z - red
   '#90caf9', // J - pale blue
   '#ffb74d', // L - orange
+  '#b0bec5', // Tuerca - metal
 ];
 
 const PIECES = [
@@ -24,6 +26,7 @@ const PIECES = [
   [[5,5,0],[0,5,5],[0,0,0]],                  // Z
   [[6,0,0],[6,6,6],[0,0,0]],                  // J
   [[0,0,7],[7,7,7],[0,0,0]],                  // L
+  [[8,8,8],[8,0,8],[8,8,8]],                  // Tuerca (nut) - centro 0 = hueco permanente
 ];
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
@@ -47,7 +50,7 @@ function createBoard() {
 }
 
 function randomPiece() {
-  const type = Math.floor(Math.random() * 7) + 1;
+  const type = Math.floor(Math.random() * 8) + 1;
   const shape = PIECES[type].map(row => [...row]);
   return { type, shape, x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 };
 }
@@ -165,6 +168,21 @@ function drawBlock(context, x, y, colorIndex, size, alpha) {
   // highlight
   context.fillStyle = 'rgba(255,255,255,0.12)';
   context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  if (colorIndex === NUT) {
+    const cx = x * size + size / 2;
+    const cy = y * size + size / 2;
+    // hueco interior: círculo del color de fondo del tablero
+    context.fillStyle = '#1a1a25';
+    context.beginPath();
+    context.arc(cx, cy, size * 0.24, 0, Math.PI * 2);
+    context.fill();
+    // aro metálico alrededor del hueco
+    context.strokeStyle = 'rgba(0,0,0,0.35)';
+    context.lineWidth = 2;
+    context.beginPath();
+    context.arc(cx, cy, size * 0.24, 0, Math.PI * 2);
+    context.stroke();
+  }
   context.globalAlpha = 1;
 }
 
