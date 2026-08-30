@@ -36,26 +36,26 @@ jobs:
             gh label create "$name" --color "$color" --description "$desc" --force
           done
 
-      - name: Run Claude issue triage
-        uses: anthropics/claude-code-action@v1
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Un unico comentario que se actualiza en cada edicion del issue (no se duplica).
-          use_sticky_comment: true
-          claude_args: >-
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh label list:*),Read,Glob,Grep"
-          prompt: |
-            Sos el triador de issues del repo ${{ github.repository }}.
-            Issue #${{ github.event.issue.number }}
-            Titulo: ${{ github.event.issue.title }}
-            Autor: ${{ github.event.issue.user.login }}
+     - name: Run Claude issue triage
+      uses: anthropics/claude-code-action@v1
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        # Un unico comentario que se actualiza en cada edicion del issue (no se duplica).
+        use_sticky_comment: true
+        claude_args: >-
+          --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Read,Glob,Grep"
+        prompt: |
+          Sos el triador de issues del repo ${{ github.repository }}.
+          Issue #${{ github.event.issue.number }}
+          Titulo: ${{ github.event.issue.title }}
+          Autor: ${{ github.event.issue.user.login }}
 
-            Cuerpo del issue:
-            ---
-            ${{ github.event.issue.body }}
-            ---
+          Cuerpo del issue:
+          ---
+          ${{ github.event.issue.body }}
+          ---
 
             Tareas:
             1. Lee el issue y explora el codigo relevante (game.js, index.html, style.css)
