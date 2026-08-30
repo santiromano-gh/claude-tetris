@@ -35,18 +35,17 @@ jobs:
             desc=$(yq -r ".[$i].description" .github/labels.yml)
             gh label create "$name" --color "$color" --description "$desc" --force
           done
-
-     - name: Run Claude issue triage
-      uses: anthropics/claude-code-action@v1
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      - name: Run Claude issue triage
+        uses: anthropics/claude-code-action@v1
+        env:
+         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+         claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         # Un unico comentario que se actualiza en cada edicion del issue (no se duplica).
-        use_sticky_comment: true
-        claude_args: >-
+         use_sticky_comment: true
+         claude_args: >-
           --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Read,Glob,Grep"
-        prompt: |
+         prompt: |
           Sos el triador de issues del repo ${{ github.repository }}.
           Issue #${{ github.event.issue.number }}
           Titulo: ${{ github.event.issue.title }}
