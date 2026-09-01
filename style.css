@@ -160,3 +160,38 @@ kbd {
 #restart-btn:hover {
   background: #9bbdff;
 }
+
+/* ==== Selector de skin / temas visuales (Unit 3) ==== */
+#skin-select {
+  background: #22223a;
+  color: #aaa;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  width: 100%;
+}
+
+#skin-select:focus {
+  outline: none;
+  border-color: #7aa2f7;
+}
+
+/* Ajustes opcionales del título según skin activa (hook body[data-skin]) */
+body[data-skin="neon"] .game-title {
+  color: #00e5ff;
+  text-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+}
+
+body[data-skin="pastel"] .game-title {
+  color: #d9b8f0;
+  text-shadow: 0 0 20px rgba(217, 184, 240, 0.5);
+}
+
+body[data-skin="pixel"] .game-title {
+  color: #e6c33f;
+  text-shadow: none;
+}
