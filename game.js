@@ -31,6 +31,164 @@ const PIECES = [
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
+// ---- Visual skins / themes (Unit 3) ------------------------------------
+// Each skin defines a palette, canvas backgrounds and its own way to paint
+// one cell via drawCell(context, x, y, colorIndex, size). The ghost's alpha
+// is handled by drawBlock() (globalAlpha is set/reset outside).
+
+function roundedRectPath(context, px, py, w, h, r) {
+  context.moveTo(px + r, py);
+  context.lineTo(px + w - r, py);
+  context.arcTo(px + w, py, px + w, py + r, r);
+  context.lineTo(px + w, py + h - r);
+  context.arcTo(px + w, py + h, px + w - r, py + h, r);
+  context.lineTo(px + r, py + h);
+  context.arcTo(px, py + h, px, py + h - r, r);
+  context.lineTo(px, py + r);
+  context.arcTo(px, py, px + r, py, r);
+}
+
+// Shared round-bore rendering for the tuerca (NUT) so every skin's hole
+// stays visually in sync: a filled disc plus a ring stroke.
+function drawNutBore(context, cx, cy, r, fillStyle, strokeStyle) {
+  context.fillStyle = fillStyle;
+  context.beginPath();
+  context.arc(cx, cy, r, 0, Math.PI * 2);
+  context.fill();
+  context.strokeStyle = strokeStyle;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.arc(cx, cy, r, 0, Math.PI * 2);
+  context.stroke();
+}
+
+const SKINS = {
+  retro: {
+    label: 'Retro',
+    palette: COLORS,
+    boardBg: '#1a1a25',
+    gridStroke: '#22222e',
+    drawCell(context, x, y, colorIndex, size) {
+      const color = this.palette[colorIndex];
+      context.fillStyle = color;
+      context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
+      // highlight
+      context.fillStyle = 'rgba(255,255,255,0.12)';
+      context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+      if (colorIndex === NUT) {
+        drawNutBore(context, x * size + size / 2, y * size + size / 2,
+          size * 0.24, '#1a1a25', 'rgba(0,0,0,0.35)');
+      }
+    },
+  },
+
+  neon: {
+    label: 'Neon',
+    palette: [
+      null,
+      '#00e5ff', '#ffe600', '#d500f9', '#00e676',
+      '#ff1744', '#2979ff', '#ff9100', '#c0c8d0',
+    ],
+    boardBg: '#05050a',
+    gridStroke: '#153447',
+    drawCell(context, x, y, colorIndex, size) {
+      const color = this.palette[colorIndex];
+      const px = x * size + 1, py = y * size + 1, s = size - 2;
+      context.shadowColor = color;
+      context.shadowBlur = 12;
+      context.fillStyle = color;
+      context.fillRect(px, py, s, s);
+      context.shadowBlur = 0;
+      context.fillStyle = 'rgba(255,255,255,0.18)';
+      context.fillRect(px, py, s, 4);
+      if (colorIndex === NUT) {
+        drawNutBore(context, x * size + size / 2, y * size + size / 2,
+          size * 0.26, '#05050a', color);
+      }
+    },
+  },
+
+  pastel: {
+    label: 'Pastel',
+    palette: [
+      null,
+      '#a0e7e5', '#fbe7a1', '#d9b8f0', '#b8e6c1',
+      '#f7b8b8', '#b8d0f0', '#f8d0a8', '#cfd8dc',
+    ],
+    boardBg: '#e8e4f0',
+    gridStroke: '#d0c8e0',
+    drawCell(context, x, y, colorIndex, size) {
+      const color = this.palette[colorIndex];
+      const px = x * size + 2, py = y * size + 2, s = size - 4;
+      const r = Math.min(8, s / 3);
+      context.fillStyle = color;
+      context.beginPath();
+      if (context.roundRect) context.roundRect(px, py, s, s, r);
+      else roundedRectPath(context, px, py, s, s, r);
+      context.fill();
+      context.fillStyle = 'rgba(255,255,255,0.30)';
+      context.fillRect(px + 3, py + 3, s - 6, 3);
+      if (colorIndex === NUT) {
+        drawNutBore(context, x * size + size / 2, y * size + size / 2,
+          size * 0.24, this.boardBg, 'rgba(0,0,0,0.18)');
+      }
+    },
+  },
+
+  pixel: {
+    label: 'Pixel art',
+    palette: [
+      null,
+      '#3ec6d6', '#e6c33f', '#a85cc0', '#6cbf6c',
+      '#d95c5c', '#6ba8e6', '#e69a3c', '#9aa5ad',
+    ],
+    boardBg: '#12121a',
+    gridStroke: '#2c2c3a',
+    drawCell(context, x, y, colorIndex, size) {
+      const color = this.palette[colorIndex];
+      const px = x * size + 1, py = y * size + 1, s = size - 2;
+      context.fillStyle = color;
+      context.fillRect(px, py, s, s);
+      // deterministic checkerboard dither texture
+      const d = 3;
+      context.fillStyle = 'rgba(0,0,0,0.18)';
+      for (let iy = 0; iy < s; iy += d) {
+        for (let ix = 0; ix < s; ix += d) {
+          if (((ix / d) + (iy / d)) % 2 === 0) {
+            context.fillRect(px + ix, py + iy, Math.min(d, s - ix), Math.min(d, s - iy));
+          }
+        }
+      }
+      context.fillStyle = 'rgba(255,255,255,0.10)';
+      context.fillRect(px, py, s, 3);
+      if (colorIndex === NUT) {
+        const cx = x * size + size / 2;
+        const cy = y * size + size / 2;
+        const hs = size * 0.36;
+        context.fillStyle = this.boardBg;
+        context.fillRect(cx - hs / 2, cy - hs / 2, hs, hs);
+        context.strokeStyle = 'rgba(0,0,0,0.45)';
+        context.lineWidth = 2;
+        context.strokeRect(cx - hs / 2, cy - hs / 2, hs, hs);
+      }
+    },
+  },
+};
+
+let currentSkin = SKINS.retro;
+
+function isSkin(name) {
+  return Object.prototype.hasOwnProperty.call(SKINS, name);
+}
+
+function applySkin(name) {
+  const key = isSkin(name) ? name : 'retro';
+  currentSkin = SKINS[key];
+  canvas.style.background = currentSkin.boardBg;
+  nextCanvas.style.background = currentSkin.boardBg;
+  document.body.dataset.skin = key;
+}
+
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 const nextCanvas = document.getElementById('next-canvas');
@@ -42,6 +200,7 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
+const skinSelect = document.getElementById('skin-select');
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 
@@ -161,33 +320,13 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
   context.globalAlpha = alpha ?? 1;
-  context.fillStyle = color;
-  context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
-  // highlight
-  context.fillStyle = 'rgba(255,255,255,0.12)';
-  context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
-  if (colorIndex === NUT) {
-    const cx = x * size + size / 2;
-    const cy = y * size + size / 2;
-    // hueco interior: círculo del color de fondo del tablero
-    context.fillStyle = '#1a1a25';
-    context.beginPath();
-    context.arc(cx, cy, size * 0.24, 0, Math.PI * 2);
-    context.fill();
-    // aro metálico alrededor del hueco
-    context.strokeStyle = 'rgba(0,0,0,0.35)';
-    context.lineWidth = 2;
-    context.beginPath();
-    context.arc(cx, cy, size * 0.24, 0, Math.PI * 2);
-    context.stroke();
-  }
+  currentSkin.drawCell(context, x, y, colorIndex, size);
   context.globalAlpha = 1;
 }
 
 function drawGrid() {
-  ctx.strokeStyle = '#22222e';
+  ctx.strokeStyle = currentSkin.gridStroke;
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -323,4 +462,28 @@ document.addEventListener('keydown', e => {
 
 restartBtn.addEventListener('click', init);
 
+// ---- Skin: persisted load and live switching (Unit 3) ----
+function loadSkin() {
+  let saved = 'retro';
+  try {
+    const v = localStorage.getItem('tetris.skin');
+    if (v && isSkin(v)) saved = v;
+  } catch (e) { /* localStorage unavailable */ }
+  applySkin(saved);
+  if (skinSelect) skinSelect.value = saved;
+}
+
+if (skinSelect) {
+  skinSelect.addEventListener('change', () => {
+    const name = skinSelect.value;
+    applySkin(name);
+    try {
+      localStorage.setItem('tetris.skin', name);
+    } catch (e) { /* localStorage unavailable */ }
+    draw();
+    if (next) drawNext();
+  });
+}
+
+loadSkin();
 init();
