@@ -160,3 +160,137 @@ kbd {
 #restart-btn:hover {
   background: #9bbdff;
 }
+
+/* ============================================================
+   Records locales / tabla de puntuaciones (Unit 2)
+   ============================================================ */
+#start-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #7aa2f7;
+}
+
+.records-block {
+  width: 260px;
+  max-width: 78vw;
+}
+
+.records-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  color: #cfd3e6;
+}
+
+.records-table th {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #555570;
+  font-weight: 600;
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid #2a2a3a;
+}
+
+.records-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #1e1e2c;
+}
+
+.records-table td:nth-child(3),
+.records-table td:nth-child(4),
+.records-table th:nth-child(3),
+.records-table th:nth-child(4) {
+  text-align: right;
+}
+
+.records-table .record-row.highlight td {
+  background: rgba(122, 162, 247, 0.22);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.records-table .record-empty {
+  text-align: center;
+  font-style: italic;
+  color: #555570;
+}
+
+.records-stats {
+  margin-top: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  color: #7aa2f7;
+  text-align: center;
+}
+
+.records-nameform {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.records-nameform.hidden {
+  display: none;
+}
+
+#overlay-name {
+  background: #1a1a25;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #e0e0e0;
+  width: 150px;
+}
+
+#overlay-name:focus {
+  outline: none;
+  border-color: #7aa2f7;
+}
+
+#overlay-save,
+#play-btn {
+  background: #7aa2f7;
+  color: #0f0f17;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+#overlay-save {
+  padding: 8px 18px;
+}
+
+#overlay-save:hover,
+#play-btn:hover {
+  background: #9bbdff;
+}
+
+#reset-records-btn {
+  background: transparent;
+  color: #888;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+#reset-records-btn:hover {
+  color: #e57373;
+  border-color: #e57373;
+}
