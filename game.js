@@ -42,8 +42,45 @@ const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
+const pauseMenu = document.getElementById('pause-menu');
+const resumeBtn = document.getElementById('resume-btn');
+const menuRestartBtn = document.getElementById('menu-restart-btn');
+const toggleControlsBtn = document.getElementById('toggle-controls-btn');
+const menuControls = document.getElementById('menu-controls');
+const startLevelSelect = document.getElementById('start-level');
 
-let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+const START_LEVEL_KEY = 'tetris.startLevel';
+const MIN_START_LEVEL = 1;
+const MAX_START_LEVEL = 15;
+
+function getStartLevel() {
+  let raw = null;
+  try {
+    raw = localStorage.getItem(START_LEVEL_KEY);
+  } catch (e) {
+    raw = null;
+  }
+  const n = parseInt(raw, 10);
+  if (!Number.isFinite(n)) return MIN_START_LEVEL;
+  return Math.min(MAX_START_LEVEL, Math.max(MIN_START_LEVEL, n));
+}
+
+function setStartLevel(value) {
+  const n = Math.min(MAX_START_LEVEL, Math.max(MIN_START_LEVEL, parseInt(value, 10) || MIN_START_LEVEL));
+  try {
+    localStorage.setItem(START_LEVEL_KEY, String(n));
+  } catch (e) {
+    /* modo privado: no se persiste */
+  }
+  return n;
+}
+
+let board, current, next, score, lines, level, startLevel, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+
+// velocidad de caída (ms/fila) en función del nivel — única fórmula compartida
+function speedFor(lvl) {
+  return Math.max(100, 1000 - (lvl - 1) * 90);
+}
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -109,8 +146,8 @@ function clearLines() {
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
-    level = Math.floor(lines / 10) + 1;
-    dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+    level = Math.floor(lines / 10) + startLevel;
+    dropInterval = speedFor(level);
     updateHUD();
   }
 }
@@ -251,13 +288,13 @@ function togglePause() {
   if (gameOver) return;
   paused = !paused;
   if (!paused) {
+    pauseMenu.classList.add('hidden');
     lastTime = performance.now();
     loop(lastTime);
   } else {
     cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
-    overlay.classList.remove('hidden');
+    menuControls.classList.add('hidden');
+    pauseMenu.classList.remove('hidden');
   }
 }
 
@@ -279,25 +316,30 @@ function loop(ts) {
 }
 
 function init() {
+  startLevel = getStartLevel();
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  level = startLevel;
   paused = false;
   gameOver = false;
-  dropInterval = 1000;
+  dropInterval = speedFor(startLevel);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  pauseMenu.classList.add('hidden');
+  menuControls.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyP') { togglePause(); return; }
+  // dejar que los controles del menú de pausa (p. ej. el <select>) manejen sus propias teclas
+  if (e.target === startLevelSelect) return;
+  if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
   if (paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -322,5 +364,19 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+
+// ---- Menú de pausa ----
+startLevelSelect.value = String(getStartLevel());
+startLevelSelect.addEventListener('change', () => {
+  const n = setStartLevel(startLevelSelect.value);
+  startLevelSelect.value = String(n);
+});
+resumeBtn.addEventListener('click', () => {
+  if (paused) togglePause();
+});
+menuRestartBtn.addEventListener('click', init);
+toggleControlsBtn.addEventListener('click', () => {
+  menuControls.classList.toggle('hidden');
+});
 
 init();
